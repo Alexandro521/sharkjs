@@ -1,7 +1,7 @@
 export class Vector3 {
-  constructor(x, y, z) {
+  constructor([x, y, z]) {
     this.x = x;
-    this.y = y;
+    this.y = y;  
     this.z = z;
   }
   sum(vector) {
@@ -63,8 +63,8 @@ export class Vector3 {
     this.x = x;
     this.z = z;
   }
-  get Position() {
-    return [this.x, this.y, this.z];
+  get position() {
+    return [this.x, this.y, this.z]
   }
   static _mag_([x, y, z]) {
     return Math.sqrt(x ** 2 + y ** 2 + z ** 2);
@@ -132,10 +132,10 @@ export class Render {
     ctx.fillRect(screen_x, screen_y, dist, dist);
     ctx.fill();
     ctx.closePath();
-    if (index != -1) {
-      ctx.textRendering = "geometricPrecision" | 1;
-      //ctx.strokeText(index, screen_x, screen_y - 10, 30);
-    }
+   // if (index != -1) {
+      //ctx.textRendering = "geometricPrecision" | 1;
+     // ctx.strokeText(index, screen_x, screen_y - 10, 30);
+    //}
   }
   drawEdge({ fromScreenX, fromScreenY, toScreenX, toScreenY }) {
     const ctx = this.CTX;
@@ -198,7 +198,10 @@ export function timeLine(handler) {
   };
   let f = (frame) => {
     requestAnimationFrame(f);
-    if (!play) cancelAnimationFrame(f);
+    if (!play) {
+       cancelAnimationFrame(f)
+      return
+    }
     handler(frame, stop, resume);
   };
   f();
@@ -208,7 +211,10 @@ class Object {
   constructor(origin, vertex, faces) {
     (this.origin = origin), (this.vertex = vertex), (this.faces = faces);
   }
+  static calculateTriangles (faces) {
+      
 
+  }
   setPosition(newPosition) {
     this.vertex = this.vertex.map((v) => {
       let diff = Vector3._subs_(this.origin, v);
@@ -291,33 +297,63 @@ export class Cube extends Object {
   }
 }
 
-function calculateTorus(origin, subdivisionY=5, subdivisionX = 5) { 
-    let torus = []
-    for(let e = 0, angle=0; e < subdivisionY; e++, angle+= 360/subdivisionY){
-        let arc = []
-        for(let i = 0; i < subdivisionX; i++){
-            let x = Math.cos(i*Math.PI/(subdivisionX/2)) 
-            let y = Math.sin(i*Math.PI/(subdivisionX/2))
-            arc.push([x+3 ,y,10]) 
-        }
-        arc = arc.map((v,i)=>{
-            let vector = Vector3._subs_(origin,v)
-            vector = Vector3._rotate_y_(vector, angletoRad(angle))
-            vector = Vector3._add_(vector, origin)
-            return vector
-        })
-        torus.push(...arc)
-    }
-    return torus
-}
 export class Torus extends Object {
-    constructor(){
+  constructor(subdivisionX,subdivisionY){
+
+        let vertex = Torus.calculateVertex([0,0,10],subdivisionY, subdivisionX)
+        let face = Torus.calculateFaces(vertex,subdivisionX, subdivisionY)
         super(
             [0,0,10],
-            calculateTorus([0,0,10])
-        )
+            vertex,
+            face
+          )
+        }
+      static calculateVertex(origin, subdivisionY=10, subdivisionX = 10) {  
+            let torus = []
+            for(let e = 0, angle=0; e < subdivisionY; e++, angle+= 360/subdivisionY){
+                let arc = []
+                for(let i = 0; i < subdivisionX; i++){
+                    let x = Math.cos(i*Math.PI/(subdivisionX/2)) 
+                    let y = Math.sin(i*Math.PI/(subdivisionX/2))
+                    arc.push([x+3 ,y,10]) 
+                }
+                arc = arc.map((v,i)=>{
+                    let vector = Vector3._subs_(origin,v)
+                    vector = Vector3._rotate_y_(vector, angletoRad(angle))
+                    vector = Vector3._add_(vector, origin)
+                    return vector
+                })
+                torus.push(...arc)
+            }
+            return torus
+        }
+      static calculateFaces(vertex, subdivisionY, subdivisionX){
+         let faces = []
+          for(let ring = 0; ring < vertex.length/subdivisionY; ring++) {
+              //calcular los index del arco actual y el arco vecino que vamos a usar para iterar
+              let currentArc = subdivisionY*ring
+              let neighborArc = subdivisionY*ring === vertex.length - subdivisionY ? 0 : subdivisionY*ring+subdivisionY
+      
+              console.log({currentArc, neighborArc}) 
+              for(let x1=currentArc, x2=neighborArc; x1 < currentArc+subdivisionY; x1++,x2++){
+                let nx1 = x1 === currentArc+subdivisionY-1 ? currentArc : x1+1
+                let nx2 = x2 === neighborArc+subdivisionY-1 ? neighborArc : x2+1
+                
+               /** 
+                * forma de la cara
+                    x1---->x2
+                    |       |
+                    |       |
+                    nx1<---nx2
+                   
+                */
+               faces.push([x1,x2,nx2,nx1])
+              } 
+          }
+          return faces
+      
+      }
     }
-}
 
 export function angletoRad(x) {
   return (x * Math.PI) / 180;

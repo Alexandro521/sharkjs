@@ -1,4 +1,4 @@
-import {Torus, Render, timeLine, Cube, angletoRad} from './shark-js.mjs'
+import {Torus, Render, timeLine, Cube, angletoRad,Vector3} from './shark-js.mjs'
 
 //canvas setup
 const canvas = document.createElement('canvas')
@@ -19,19 +19,21 @@ cube2.scale([4,4,4])
 cube2.rotate_y(angletoRad(0))
 cube2.setPosition([-2,-5,15])
 
-let torus = new Torus()
+let torus = new Torus(15,20)
+const positiontorus = new Vector3([0,0,12])
 
-torus.setPosition([0,-5,10])
-torus.rotate_x(angletoRad(0)) 
+torus.setPosition([0,0,8])
+torus.rotate_x(angletoRad(-90))  
+
+// render.drawObject(torus, 'vertex', "#fff")
+
+
 timeLine((frame, stop, resume)=>{
-    /*
-    cube.rotate_x(angletoRad(-1))
-    cube.rotate_y(angletoRad(-0.366666))
-    cube2.rotate_y(angletoRad(1))
-    render.drawObject(cube, 'edges', '#13d4ffff')
-    render.drawObject(cube2, 'edges')*/
     render.clearWindow()
     torus.rotate_y(angletoRad(1))
-    render.drawObject(torus, 'vertex', "#fff")
 
+render.drawObject(torus, 'edges', "#ffffffe5") 
+    
+    stop()
 })
+
