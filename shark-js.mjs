@@ -291,18 +291,18 @@ export class Cube extends Object {
   }
 }
 
-function calculateTorus(origin) {
+function calculateTorus(origin, subdivisionY=5, subdivisionX = 5) { 
     let torus = []
-    for(let e = 0; e < 10; e++){
+    for(let e = 0, angle=0; e < subdivisionY; e++, angle+= 360/subdivisionY){
         let arc = []
-        for(let i = 0; i < 10; i++){
-            let x = Math.cos(i*Math.PI/5) 
-            let y = Math.sin(i*Math.PI/5)
+        for(let i = 0; i < subdivisionX; i++){
+            let x = Math.cos(i*Math.PI/(subdivisionX/2)) 
+            let y = Math.sin(i*Math.PI/(subdivisionX/2))
             arc.push([x+3 ,y,10]) 
         }
         arc = arc.map((v,i)=>{
             let vector = Vector3._subs_(origin,v)
-            vector = Vector3._rotate_y_(vector, angletoRad(360*(e*10)/100))
+            vector = Vector3._rotate_y_(vector, angletoRad(angle))
             vector = Vector3._add_(vector, origin)
             return vector
         })
